@@ -10,7 +10,8 @@ name:                parsec-plus-base
 version:             1.0.0.0
 
 -- A short (one-line) description of the package.
-synopsis:            General-purpose IO, dressed up in MonadIO, favouring Text
+synopsis:            Parsecable class, and utilities; base version without file
+                     parsing.
 
 -- A longer description of the package.
 -- description:
