@@ -53,8 +53,8 @@ instance Printable ParseError where
 
 ------------------------------------------------------------
 
-class AsParseError e where
-  _ParseError ∷ Prism' e ParseError
+class AsParseError ε where
+  _ParseError ∷ Prism' ε ParseError
 
 instance AsParseError ParseError where
   _ParseError = id
