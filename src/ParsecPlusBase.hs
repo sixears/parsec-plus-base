@@ -93,6 +93,11 @@ class Parsecable χ where
   __parsec__ ∷ ∀ s σ . (Printable σ, Stream s Identity Char) ⇒ σ → s → χ
   __parsec__ sourceName = __right__ ∘ parsec @_ @ParseError sourceName
 
+  {- | DEPRECATED parsec' "use parsec @ParseError instead" -}
+  parsec' ∷ (MonadError ParseError μ, Stream s Identity Char, Printable σ) ⇒
+            σ → s → μ χ
+  parsec' = parsec
+
 ----------------------------------------
 
 instance Parsecable Word8 where
