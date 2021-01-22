@@ -93,10 +93,10 @@ class Parsecable χ where
   __parsec__ ∷ ∀ s σ . (Printable σ, Stream s Identity Char) ⇒ σ → s → χ
   __parsec__ sourceName = __right__ ∘ parsec @_ @ParseError sourceName
 
-  {- | DEPRECATED parsec' "use parsec @ParseError instead" -}
   parsec' ∷ (MonadError ParseError μ, Stream s Identity Char, Printable σ) ⇒
             σ → s → μ χ
   parsec' = parsec
+{-# DEPRECATED parsec' "use parsec @ParseError instead" #-}
 
 ----------------------------------------
 
@@ -121,12 +121,14 @@ __parsecN__ t = __right__ ∘ first ParseError $ parse (parser ⋪ eof) "" t
 ----------------------------------------
 
 {- | Parse between parentheses -}
+{-# DEPRECATED parens "use ParserPlus.parens" #-}
 parens ∷ Stream s m Char ⇒ ParsecT s u m a → ParsecT s u m a
 parens = between (char '(') (char ')')
 
 ----------------------------------------
 
 {- | Parse 1 or more digits -}
+{-# DEPRECATED digits "use ParserPlus.digits" #-}
 digits ∷ Stream s m Char ⇒ ParsecT s u m String
 digits = many1 digit
 
@@ -158,6 +160,7 @@ parseEscaped l r = do
      Note the use of `try`; doubleChar will consume the first char of
      non-conformant input.
  -}
+{-# DEPRECATED doubledChar "use ParserPlus.doubledChar" #-}
 doubledChar ∷ [Char] → Parser Char
 doubledChar cs = (choice $ (\ c → char c ⋫ char c) ⊳ cs) ∤ noneOf cs
 
@@ -167,6 +170,7 @@ doubledChar cs = (choice $ (\ c → char c ⋫ char c) ⊳ cs) ∤ noneOf cs
 
      @ parse (doubledChars "{}") "test" "o}}{{p}x" ≡ Right "o}{p" @
  -}
+{-# DEPRECATED doubledChars "use ParserPlus.doubledChars" #-}
 doubledChars ∷ [Char] → Parser [Char]
 doubledChars cs = many (try $ doubledChar cs)
 
@@ -179,6 +183,7 @@ doubledChars cs = many (try $ doubledChar cs)
 
      @ parse (boundedDoubledChars '!' '!') "test" "!o}}!!p!" ≡ Right "o}}!p" @
  -}
+{-# DEPRECATED boundedDoubledChars "use ParserPlus.boundedDoubledChars" #-}
 boundedDoubledChars ∷ Char -> Char → Parser [Char]
 boundedDoubledChars l r = char l ⋫ doubledChars [l,r] ⋪ char r
 
@@ -190,6 +195,7 @@ boundedDoubledChars l r = char l ⋫ doubledChars [l,r] ⋪ char r
      provides a result?  The parser succeeds if the parse output prefixes
      precisely one result.
  -}
+{-# DEPRECATED uniquePrefix "use ParserPlus.uniquePrefix" #-}
 uniquePrefix ∷ ∀ α β χ σ τ η . (Eq α, Printable χ) ⇒
                [([α],β)] → ([α] → χ) → ParsecT σ τ η [α] → ParsecT σ τ η β
 uniquePrefix ss e prs = do
@@ -202,6 +208,7 @@ uniquePrefix ss e prs = do
 
 {- | Parse the given character, or the same character in another case
      (upper or lower). -}
+{-# DEPRECATED caseInsensitiveChar "use ParserPlus.caseInsensitiveChar" #-}
 caseInsensitiveChar ∷ Stream σ η Char ⇒ Char → ParsecT σ υ η Char
 caseInsensitiveChar c = do
   _ ← char (toLower c) ∤ char (toUpper c)
@@ -209,6 +216,7 @@ caseInsensitiveChar c = do
 
 -- | Parse the given string, but with any combination of upper and lower case
 -- characters.
+{-# DEPRECATED caseInsensitiveString "use ParserPlus.caseInsensitiveString" #-}
 caseInsensitiveString ∷ Stream σ η Char ⇒ String → ParsecT σ υ η String
 caseInsensitiveString = sequence ∘ fmap caseInsensitiveChar
 
