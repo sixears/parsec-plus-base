@@ -1,7 +1,11 @@
+1.0.1.3 2021-09-04
+==================
+- upgrade dependencies
+
 1.0.1.1 2021-01-22
 ==================
 - deprecate parens, digits, doubledChar, doubledChars, boundedDoubledChars,
-  uniquePrefix, caseInsensitiveChar, caseInsensitiveString in favour of 
+  uniquePrefix, caseInsensitiveChar, caseInsensitiveString in favour of
   parser-plus
 
 1.0.1.0 2019-09-14

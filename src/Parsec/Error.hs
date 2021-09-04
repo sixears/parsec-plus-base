@@ -22,14 +22,13 @@ import Data.Textual  ( Printable( print ) )
 -- lens --------------------------------
 
 import Control.Lens.Fold    ( (^?) )
-import Control.Lens.Getter  ( to )
 import Control.Lens.Prism   ( Prism', prism' )
 import Control.Lens.TH      ( makePrisms )
 
 -- monadio-error -----------------------
 
 import MonadError.IO.Error  ( AsIOError( _IOError, _IOErr )
-                            , IOError( IOErr, unErr ) )
+                            , IOError, ioErr )
 
 -- parsec --------------------------------
 
@@ -72,6 +71,6 @@ instance AsParseError IOParseError where
 
 instance AsIOError IOParseError where
   _IOError = _IOPE_IO_ERROR
-  _IOErr   = prism' (IOPE_IO_ERROR ∘ IOErr) (^? _IOPE_IO_ERROR ∘ to unErr)
+  _IOErr   = prism' (IOPE_IO_ERROR ∘ ioErr) (^? _IOPE_IO_ERROR ∘ _IOErr)
 
 -- that's all, folks! ----------------------------------------------------------
