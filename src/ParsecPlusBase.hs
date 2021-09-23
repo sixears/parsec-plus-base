@@ -1,9 +1,3 @@
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE NoImplicitPrelude    #-}
-{-# LANGUAGE Rank2Types           #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE UnicodeSyntax        #-}
-
 module ParsecPlusBase
   ( AsParseError(..), IOParseError, Parsecable(..), Parser
   , boundedDoubledChars, caseInsensitiveChar, caseInsensitiveString, digits
@@ -30,6 +24,7 @@ import Data.Monoid            ( mappend )
 import Data.String            ( String )
 import Data.Tuple             ( fst )
 import Data.Word              ( Word8 )
+import GHC.Stack              ( HasCallStack, callStack )
 import Text.Read              ( read )
 
 -- base-unicode-symbols ----------------
@@ -82,11 +77,13 @@ class Parsecable χ where
 
   {- | A bit like `Text.Read.read` for parsecable values -}
   parsec ∷ ∀ ε μ s σ .
-           (AsParseError ε, MonadError ε μ, Stream s Identity Char, Printable σ)
+           (AsParseError ε, MonadError ε μ, Stream s Identity Char, Printable σ,
+            HasCallStack)
          ⇒ σ → s → μ χ
-  parsec sourceName t = case parse parser (toString sourceName) t of
-                           Left  e → throwError (_ParseError # ParseError e)
-                           Right s → return s
+  parsec sourceName t =
+    case parse parser (toString sourceName) t of
+      Left  e → throwError (_ParseError # ParseError e callStack)
+      Right s → return s
   ------------------
 
   {- | *PARTIAL*: `parsec`, will error on failure to parse -}
@@ -115,8 +112,9 @@ instance Parsecable Word8 where
 {- | *PARTIAL*: Parse a stream, throwing an error in case of failure.  No
      name for the stream is given -}
 
-__parsecN__ ∷ (Stream s Identity Char, Parsecable χ) ⇒ s → χ
-__parsecN__ t = __right__ ∘ first ParseError $ parse (parser ⋪ eof) "" t
+__parsecN__ ∷ (Stream s Identity Char, Parsecable χ, HasCallStack) ⇒ s → χ
+__parsecN__ t =
+  __right__ ∘ first (\ pe → ParseError pe callStack) $ parse (parser ⋪ eof) "" t
 
 ----------------------------------------
 
