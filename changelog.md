@@ -1,3 +1,7 @@
+1.0.3.0 2021-12-04
+==================
+- add parse, asParseError, throwAsParseError
+
 1.0.2.0 2021-09-22
 ==================
 - add Generic, NFData, HasCallstack instances to ParseError & IOParseError

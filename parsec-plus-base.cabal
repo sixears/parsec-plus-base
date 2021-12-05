@@ -7,7 +7,7 @@ name:                parsec-plus-base
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             1.0.2.0
+version:             1.0.3.0
 
 -- A short (one-line) description of the package.
 synopsis:            Parsecable class, and utilities; base version without file
@@ -69,8 +69,8 @@ library
                      , mtl, parsec, text-printer
 
                      , has-callstack >= 1.0.1.0
-                     , monaderror-io >= 1.2.0.0
-                     , more-unicode  >= 0.0.15.0
+                     , monaderror-io >= 1.2.1.0
+                     , more-unicode  >= 0.0.16.0
 
   -- Directories containing source files.
   hs-source-dirs:      src

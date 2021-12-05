@@ -1,7 +1,7 @@
 module ParsecPlusBase
   ( AsParseError(..), IOParseError, Parsecable(..), Parser
   , boundedDoubledChars, caseInsensitiveChar, caseInsensitiveString, digits
-  , parens, __parsecN__, uniquePrefix
+  , parens, __parsecN__, parse, uniquePrefix
   )
 where
 
@@ -12,9 +12,8 @@ import Prelude  ( error )
 import Control.Applicative    ( many, pure )
 import Control.Monad          ( return, sequence )
 import Control.Monad.Fail     ( fail )
-import Data.Bifunctor         ( first )
 import Data.Char              ( Char, toLower, toUpper )
-import Data.Either            ( Either( Left, Right ), either )
+import Data.Either            ( either )
 import Data.Eq                ( Eq )
 import Data.Function          ( ($), id )
 import Data.Functor           ( fmap )
@@ -24,7 +23,7 @@ import Data.Monoid            ( mappend )
 import Data.String            ( String )
 import Data.Tuple             ( fst )
 import Data.Word              ( Word8 )
-import GHC.Stack              ( HasCallStack, callStack )
+import GHC.Stack              ( HasCallStack )
 import Text.Read              ( read )
 
 -- base-unicode-symbols ----------------
@@ -35,37 +34,37 @@ import Data.Function.Unicode  ( (∘) )
 
 import Data.Textual  ( Printable, toString )
 
--- lens --------------------------------
-
-import Control.Lens.Review   ( (#) )
-
 -- more-unicode ------------------------
 
 import Data.MoreUnicode.Applicative  ( (⊵), (⋪), (⋫), (∤) )
+import Data.MoreUnicode.Either       ( 𝔼 )
 import Data.MoreUnicode.Functor      ( (⊳) )
 
 -- mtl ---------------------------------
 
-import Control.Monad.Except  ( MonadError, throwError )
+import Control.Monad.Except  ( MonadError )
 
 -- parsec ------------------------------
 
+import qualified Text.Parsec.Prim
+
 import Text.Parsec.Char        ( char, digit, noneOf, oneOf, string )
 import Text.Parsec.Combinator  ( between, choice, count, eof, many1 )
-import Text.Parsec.Prim        ( Parsec, ParsecT, Stream, parse, try )
+import Text.Parsec.Pos         ( SourceName )
+import Text.Parsec.Prim        ( Parsec, ParsecT, Stream, try )
 
 ------------------------------------------------------------
 --                     local imports                      --
 ------------------------------------------------------------
 
 import Parsec.Error  ( AsParseError( _ParseError ), IOParseError
-                     , ParseError( ParseError ) )
+                     , ParseError, throwAsParseError )
 
 -------------------------------------------------------------------------------
 
 type Parser α = ∀ s u m . Stream s m Char ⇒ ParsecT s u m α
 
-__right__ ∷ Printable ε ⇒ Either ε β → β
+__right__ ∷ Printable ε ⇒ 𝔼 ε β → β
 __right__ x = either (error ∘ toString) id x
 
 class Parsecable χ where
@@ -80,10 +79,13 @@ class Parsecable χ where
            (AsParseError ε, MonadError ε μ, Stream s Identity Char, Printable σ,
             HasCallStack)
          ⇒ σ → s → μ χ
-  parsec sourceName t =
+  parsec sourceName t = parse parser (toString sourceName) t
+{-
     case parse parser (toString sourceName) t of
       Left  e → throwError (_ParseError # ParseError e callStack)
       Right s → return s
+-}
+
   ------------------
 
   {- | *PARTIAL*: `parsec`, will error on failure to parse -}
@@ -113,8 +115,7 @@ instance Parsecable Word8 where
      name for the stream is given -}
 
 __parsecN__ ∷ (Stream s Identity Char, Parsecable χ, HasCallStack) ⇒ s → χ
-__parsecN__ t =
-  __right__ ∘ first (\ pe → ParseError pe callStack) $ parse (parser ⋪ eof) "" t
+__parsecN__ t = __right__ $ parse @ParseError (parser ⋪ eof) "" t
 
 ----------------------------------------
 
@@ -217,5 +218,11 @@ caseInsensitiveChar c = do
 {-# DEPRECATED caseInsensitiveString "use ParserPlus.caseInsensitiveString" #-}
 caseInsensitiveString ∷ Stream σ η Char ⇒ String → ParsecT σ υ η String
 caseInsensitiveString = sequence ∘ fmap caseInsensitiveChar
+
+----------------------------------------
+
+parse ∷ ∀ ε α σ τ η . (AsParseError ε, MonadError ε η, Stream σ Identity τ) ⇒
+        Parsec σ () α → SourceName → σ → η α
+parse p s t = either throwAsParseError return $ Text.Parsec.Prim.parse p s t
 
 -- that's all, folks! ---------------------------------------------------------

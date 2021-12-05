@@ -1,5 +1,6 @@
 module Parsec.Error
-  ( AsParseError(..), IOParseError, ParseError( ParseError ) )
+  ( AsParseError(..), IOParseError, ParseError( ParseError )
+  , asParseError, throwAsParseError )
 where
 
 -- base --------------------------------
@@ -7,7 +8,7 @@ where
 import Data.Eq        ( Eq( (==) ) )
 import Data.Function  ( (&), id )
 import GHC.Generics   ( Generic )
-import GHC.Stack      ( CallStack )
+import GHC.Stack      ( CallStack, callStack )
 import Text.Show      ( Show( show ) )
 
 -- base-unicode-symbols ----------------
@@ -31,6 +32,7 @@ import HasCallstack  ( HasCallstack( callstack ) )
 import Control.Lens.Fold    ( (^?) )
 import Control.Lens.Lens    ( lens )
 import Control.Lens.Prism   ( Prism', prism, prism' )
+import Control.Lens.Review  ( (#) )
 
 -- monadio-error -----------------------
 
@@ -42,6 +44,10 @@ import MonadError.IO.Error  ( AsIOError( _IOError, _IOErr )
 import Data.MoreUnicode.Either   ( pattern 𝕷, pattern 𝕽 )
 import Data.MoreUnicode.Lens     ( (⊣), (⊢) )
 import Data.MoreUnicode.Functor  ( (⊳) )
+
+-- mtl ---------------------------------
+
+import Control.Monad.Except  ( MonadError, throwError )
 
 -- parsec --------------------------------
 
@@ -99,8 +105,21 @@ instance Printable ParseError where
 class AsParseError ε where
   _ParseError ∷ Prism' ε ParseError
 
+----------
+
 instance AsParseError ParseError where
   _ParseError = id
+
+--------------------
+
+asParseError ∷ AsParseError ε ⇒ ParsecError.ParseError → ε
+asParseError e = _ParseError # ParseError e callStack
+
+----------
+
+throwAsParseError ∷ (AsParseError ε, MonadError ε η) ⇒
+                    ParsecError.ParseError → η α
+throwAsParseError = throwError ∘ asParseError
 
 ------------------------------------------------------------
 
