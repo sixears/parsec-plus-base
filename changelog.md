@@ -1,3 +1,7 @@
+1.0.4.0 2021-12-05
+==================
+- add eitherParsec
+
 1.0.3.0 2021-12-04
 ==================
 - add parse, asParseError, throwAsParseError

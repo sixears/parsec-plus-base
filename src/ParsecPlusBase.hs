@@ -1,7 +1,7 @@
 module ParsecPlusBase
   ( AsParseError(..), IOParseError, Parsecable(..), Parser
   , boundedDoubledChars, caseInsensitiveChar, caseInsensitiveString, digits
-  , parens, __parsecN__, parse, uniquePrefix
+  , eitherParsec, parens, __parsecN__, parse, uniquePrefix
   )
 where
 
@@ -37,8 +37,9 @@ import Data.Textual  ( Printable, toString )
 -- more-unicode ------------------------
 
 import Data.MoreUnicode.Applicative  ( (⊵), (⋪), (⋫), (∤) )
-import Data.MoreUnicode.Either       ( 𝔼 )
+import Data.MoreUnicode.Either       ( 𝔼, pattern 𝕷, pattern 𝕽 )
 import Data.MoreUnicode.Functor      ( (⊳) )
+import Data.MoreUnicode.Monad        ( (≫) )
 
 -- mtl ---------------------------------
 
@@ -51,7 +52,7 @@ import qualified Text.Parsec.Prim
 import Text.Parsec.Char        ( char, digit, noneOf, oneOf, string )
 import Text.Parsec.Combinator  ( between, choice, count, eof, many1 )
 import Text.Parsec.Pos         ( SourceName )
-import Text.Parsec.Prim        ( Parsec, ParsecT, Stream, try )
+import Text.Parsec.Prim        ( Parsec, ParsecT, Stream, parserFail, try )
 
 ------------------------------------------------------------
 --                     local imports                      --
@@ -224,5 +225,15 @@ caseInsensitiveString = sequence ∘ fmap caseInsensitiveChar
 parse ∷ ∀ ε α σ τ η . (AsParseError ε, MonadError ε η, Stream σ Identity τ) ⇒
         Parsec σ () α → SourceName → σ → η α
 parse p s t = either throwAsParseError return $ Text.Parsec.Prim.parse p s t
+
+----------------------------------------
+
+{- | Take a parsec for an α, and function of the form `α → Either Printable β`,
+     and use these to build a `ParsecT`.
+ -}
+eitherParsec ∷ Printable ε ⇒ ParsecT σ ν η α → (α → 𝔼 ε β) → ParsecT σ ν η β
+eitherParsec f g = f ≫ (\ t → case g t of
+                                 𝕷 e → parserFail $ toString e
+                                 𝕽 r → return r)
 
 -- that's all, folks! ---------------------------------------------------------
