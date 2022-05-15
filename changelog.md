@@ -1,3 +1,7 @@
+1.0.5.0 2022-05-15
+==================
+- add Parsecable instances for Word{16,32,64}, and parseNonNegIntegral
+
 1.0.4.0 2021-12-05
 ==================
 - add eitherParsec

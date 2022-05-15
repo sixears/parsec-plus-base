@@ -1,11 +1,11 @@
 module ParsecPlusBase
   ( AsParseError(..), IOParseError, Parsecable(..), Parser
   , boundedDoubledChars, caseInsensitiveChar, caseInsensitiveString, digits
-  , eitherParsec, parens, __parsecN__, parse, uniquePrefix
+  , eitherParsec, parens, __parsecN__, parse, parseNonNegIntegral, uniquePrefix
   )
 where
 
-import Prelude  ( error )
+import Prelude  ( Integral, error, fromInteger, fromIntegral )
 
 -- base --------------------------------
 
@@ -21,14 +21,18 @@ import Data.Functor.Identity  ( Identity )
 import Data.List              ( filter, isPrefixOf )
 import Data.Monoid            ( mappend )
 import Data.String            ( String )
+import Data.Typeable          ( Typeable, typeOf )
 import Data.Tuple             ( fst )
-import Data.Word              ( Word8 )
+import Data.Word              ( Word8, Word16, Word32, Word64 )
 import GHC.Stack              ( HasCallStack )
 import Text.Read              ( read )
+import Text.Show              ( show )
 
 -- base-unicode-symbols ----------------
 
+import Data.Eq.Unicode        ( (≡) )
 import Data.Function.Unicode  ( (∘) )
+import Prelude.Unicode        ( ℤ )
 
 -- data-textual ------------------------
 
@@ -37,9 +41,12 @@ import Data.Textual  ( Printable, toString )
 -- more-unicode ------------------------
 
 import Data.MoreUnicode.Applicative  ( (⊵), (⋪), (⋫), (∤) )
+import Data.MoreUnicode.Char         ( ℂ )
 import Data.MoreUnicode.Either       ( 𝔼, pattern 𝕷, pattern 𝕽 )
+import Data.MoreUnicode.Maybe        ( 𝕄, pattern 𝕵, pattern 𝕹 )
 import Data.MoreUnicode.Functor      ( (⊳) )
 import Data.MoreUnicode.Monad        ( (≫) )
+import Data.MoreUnicode.Monoid       ( ю )
 
 -- mtl ---------------------------------
 
@@ -109,6 +116,41 @@ instance Parsecable Word8 where
              ∤ try ((:) ⊳ oneOf "01" ⊵ count 2 digit)
              ∤ try (count 2 digit)
              ∤ count 1 digit
+
+----------------------------------------
+
+
+----------
+
+{-| Parse a sequence of digits as a non-negative `Integral` value.
+    If the specific type is bouded (rather, if `fromIntegral` fails); then
+    a `parserFail` citing "out of bounds…" will be raised.
+ -}
+parseNonNegIntegral ∷ (Typeable χ, Integral χ, Stream σ Identity ℂ) ⇒
+                      Parsec σ ν χ
+parseNonNegIntegral = do
+  let i = read ⊳ digits
+      checkBound ∷ Integral α ⇒ ℤ → α → 𝕄 α
+      checkBound n r = if n ≡ fromIntegral r
+                       then 𝕵 r
+                       else 𝕹
+  i' ← i
+  let r = fromInteger i'
+  case checkBound i' r of
+    𝕵 x → return x
+    𝕹   → parserFail $ ю [ "Value ", (show i')
+                         , " is out of bounds for ", show $ typeOf r ]
+
+------------------------------------------------------------
+
+instance Parsecable Word16 where
+  parser = parseNonNegIntegral
+
+instance Parsecable Word32 where
+  parser = parseNonNegIntegral
+
+instance Parsecable Word64 where
+  parser = parseNonNegIntegral
 
 ------------------------------------------------------------
 
