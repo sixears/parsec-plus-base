@@ -1,3 +1,8 @@
+1.0.5.1 2022-10-27
+==================
+- add flake
+- use ghc-8.10.7 for tfmt
+
 1.0.5.0 2022-05-15
 ==================
 - add Parsecable instances for Word{16,32,64}, and parseNonNegIntegral
