@@ -10,7 +10,7 @@
     more-unicode.url  = "github:sixears/more-unicode/r0.0.17.5";
   };
 
-  outputs = { self, nixpkgs, flake-utils, build-utils
+  outputs = { self, nixpkgs, build-utils
             , has-callstack, monaderror-io, more-unicode }:
     build-utils.lib.hOutputs self nixpkgs "quasiquoting" {
       deps = {
