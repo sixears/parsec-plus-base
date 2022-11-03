@@ -6,7 +6,7 @@
     build-utils.url   = "github:sixears/flake-build-utils/r1.0.0.6";
 
     has-callstack.url = "github:sixears/has-callstack/r1.0.1.9";
-    monaderror-io.url = "github:sixears/monaderror-io/r1.2.5.9";
+    monaderror-io.url = "github:sixears/monaderror-io/r1.2.5.8";
     more-unicode.url  = "github:sixears/more-unicode/r0.0.17.6";
   };
 
