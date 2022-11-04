@@ -1,3 +1,7 @@
+1.0.5.9 2022-11-04
+==================
+- fix pkg name & description in flake
+
 1.0.5.8 2022-11-03
 ==================
 - remove redundant "output" flake-utils

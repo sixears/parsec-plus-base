@@ -1,5 +1,5 @@
 {
-  description = "Containers that may not be empty, by construction";
+  description = "Parsecable class, and utilities; base version without file parsing";
 
   inputs = {
     nixpkgs.url       = "github:nixos/nixpkgs/be44bf67"; # nixos-22.05 2022-10-15
@@ -12,7 +12,7 @@
 
   outputs = { self, nixpkgs, build-utils
             , has-callstack, monaderror-io, more-unicode }:
-    build-utils.lib.hOutputs self nixpkgs "quasiquoting" {
+    build-utils.lib.hOutputs self nixpkgs "parsec-plus-base" {
       deps = {
         inherit has-callstack monaderror-io more-unicode;
       };
